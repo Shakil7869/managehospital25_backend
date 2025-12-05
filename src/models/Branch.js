@@ -474,8 +474,6 @@ const branchSchema = new mongoose.Schema({
 });
 
 // Indexes
-branchSchema.index({ branchId: 1 });
-branchSchema.index({ code: 1 });
 branchSchema.index({ name: 'text' });
 branchSchema.index({ type: 1 });
 branchSchema.index({ status: 1 });

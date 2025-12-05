@@ -292,8 +292,6 @@ const labTestSchema = new mongoose.Schema({
 });
 
 // Indexes
-labTestSchema.index({ testId: 1 });
-labTestSchema.index({ testCode: 1 });
 labTestSchema.index({ testName: 'text' });
 labTestSchema.index({ category: 1 });
 labTestSchema.index({ sampleType: 1 });

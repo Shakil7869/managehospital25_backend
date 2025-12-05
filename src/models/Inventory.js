@@ -475,8 +475,6 @@ const inventorySchema = new mongoose.Schema({
 });
 
 // Indexes
-inventorySchema.index({ itemId: 1 });
-inventorySchema.index({ itemCode: 1 });
 inventorySchema.index({ name: 'text', description: 'text' });
 inventorySchema.index({ category: 1 });
 inventorySchema.index({ 'stock.currentQuantity': 1 });

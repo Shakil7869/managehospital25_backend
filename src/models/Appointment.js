@@ -388,13 +388,11 @@ const appointmentSchema = new mongoose.Schema({
 });
 
 // Indexes
-appointmentSchema.index({ appointmentId: 1 });
 appointmentSchema.index({ patient: 1 });
 appointmentSchema.index({ doctor: 1 });
 appointmentSchema.index({ scheduledDate: 1 });
 appointmentSchema.index({ status: 1 });
 appointmentSchema.index({ branchId: 1 });
-appointmentSchema.index({ tokenNumber: 1 });
 appointmentSchema.index({ deletedAt: 1 });
 appointmentSchema.index({ 'fees.paymentStatus': 1 });
 

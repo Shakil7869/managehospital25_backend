@@ -328,8 +328,6 @@ const invoiceSchema = new mongoose.Schema({
 });
 
 // Indexes
-invoiceSchema.index({ invoiceId: 1 });
-invoiceSchema.index({ invoiceNumber: 1 });
 invoiceSchema.index({ patient: 1 });
 invoiceSchema.index({ paymentStatus: 1 });
 invoiceSchema.index({ status: 1 });

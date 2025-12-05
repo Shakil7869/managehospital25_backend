@@ -184,8 +184,6 @@ const patientSchema = new mongoose.Schema({
 });
 
 // Indexes
-patientSchema.index({ userId: 1 });
-patientSchema.index({ patientId: 1 });
 patientSchema.index({ primaryDoctor: 1 });
 patientSchema.index({ deletedAt: 1 });
 patientSchema.index({ 'insurance.provider': 1 });

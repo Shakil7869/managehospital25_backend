@@ -309,9 +309,6 @@ const doctorSchema = new mongoose.Schema({
 });
 
 // Indexes
-doctorSchema.index({ userId: 1 });
-doctorSchema.index({ doctorId: 1 });
-doctorSchema.index({ 'medicalLicense.licenseNumber': 1 });
 doctorSchema.index({ 'specializations.name': 1 });
 doctorSchema.index({ isAvailableForAppointments: 1 });
 doctorSchema.index({ isAcceptingNewPatients: 1 });

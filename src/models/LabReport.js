@@ -313,8 +313,6 @@ const labReportSchema = new mongoose.Schema({
 });
 
 // Indexes
-labReportSchema.index({ reportId: 1 });
-labReportSchema.index({ sampleId: 1 });
 labReportSchema.index({ patient: 1 });
 labReportSchema.index({ appointment: 1 });
 labReportSchema.index({ labTest: 1 });

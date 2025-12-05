@@ -196,11 +196,7 @@ const userSchema = new mongoose.Schema({
 });
 
 // Indexes
-userSchema.index({ email: 1 });
-userSchema.index({ firebaseUid: 1 });
 userSchema.index({ role: 1 });
-userSchema.index({ branchId: 1 });
-userSchema.index({ employeeId: 1 });
 userSchema.index({ deletedAt: 1 });
 
 // Virtual for full name
