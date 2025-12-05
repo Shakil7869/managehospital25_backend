@@ -72,11 +72,11 @@ async function checkCollectionStructure(db, collName) {
     try {
         const collection = db.collection(collName);
         const sample = await collection.findOne();
-        
+
         if (!sample) {
             return { exists: true, empty: true, schema: null };
         }
-        
+
         const fields = Object.keys(sample).filter(k => !k.startsWith('_'));
         return { exists: true, empty: false, schema: fields, docCount: await collection.countDocuments() };
     } catch (error) {
@@ -86,11 +86,11 @@ async function checkCollectionStructure(db, collName) {
 
 async function verifyProduction(db) {
     log.header('📊 Production Readiness Check');
-    
+
     const existingCollections = await listCollections(db);
     const testCollections = existingCollections.filter(c => c.startsWith('test_'));
     const prodCollections = existingCollections.filter(c => expectedCollections[c]);
-    
+
     // Check 1: Test Collections
     log.step('1️⃣  Checking for test collections...');
     if (testCollections.length === 0) {
@@ -100,14 +100,14 @@ async function verifyProduction(db) {
         testCollections.forEach(c => console.log(`    • ${c}`));
         log.warning('Run: node backend/migrate-to-production.js');
     }
-    
+
     // Check 2: Production Collections
     log.step('2️⃣  Checking production collections...');
     let missingCollections = [];
-    
+
     for (const [collName, description] of Object.entries(expectedCollections)) {
         const structure = await checkCollectionStructure(db, collName);
-        
+
         if (!structure.exists) {
             log.warning(`${collName}: NOT FOUND`);
             missingCollections.push(collName);
@@ -117,23 +117,23 @@ async function verifyProduction(db) {
             log.success(`${collName}: ${structure.docCount} documents`);
         }
     }
-    
+
     // Check 3: Unexpected Collections
     log.step('3️⃣  Checking for unexpected collections...');
     const unexpectedCollections = existingCollections.filter(
         c => !expectedCollections[c] && !c.startsWith('test_') && !c.startsWith('system.')
     );
-    
+
     if (unexpectedCollections.length === 0) {
         log.success('All collections are expected');
     } else {
         log.warning(`Found ${unexpectedCollections.length} unexpected collection(s):`);
         unexpectedCollections.forEach(c => console.log(`    • ${c}`));
     }
-    
+
     // Check 4: Sample Document Structure
     log.step('4️⃣  Checking document structures...');
-    
+
     const sampleChecks = {
         'users': ['firstName', 'lastName', 'email', 'role', 'firebaseUid'],
         'patients': ['userId', 'patientId', 'bloodType'],
@@ -146,10 +146,10 @@ async function verifyProduction(db) {
         'branches': ['branchId', 'branchName', 'location'],
         'notifications': ['userId', 'message', 'type']
     };
-    
+
     for (const [collName, requiredFields] of Object.entries(sampleChecks)) {
         const structure = await checkCollectionStructure(db, collName);
-        
+
         if (structure.exists && !structure.empty) {
             const hasRequired = requiredFields.every(f => structure.schema.includes(f));
             if (hasRequired) {
@@ -160,17 +160,17 @@ async function verifyProduction(db) {
             }
         }
     }
-    
+
     // Check 5: Data Integrity
     log.step('5️⃣  Checking data integrity...');
-    
+
     // Check for duplicate emails
     if (existingCollections.includes('users')) {
         const dupeEmails = await db.collection('users').aggregate([
             { $group: { _id: '$email', count: { $sum: 1 } } },
             { $match: { count: { $gt: 1 } } }
         ]).toArray();
-        
+
         if (dupeEmails.length === 0) {
             log.success('No duplicate emails found');
         } else {
@@ -178,36 +178,36 @@ async function verifyProduction(db) {
             dupeEmails.forEach(d => console.log(`    • ${d._id}: ${d.count} records`));
         }
     }
-    
+
     // Check for orphaned documents
     if (existingCollections.includes('patients') && existingCollections.includes('users')) {
         const patients = db.collection('patients');
         const users = db.collection('users');
-        
+
         const orphaned = await patients.find({
             userId: { $nin: await users.find({}).project({ _id: 1 }).toArray().map(u => u._id) }
         }).toArray();
-        
+
         if (orphaned.length === 0) {
             log.success('No orphaned patient records');
         } else {
             log.warning(`Found ${orphaned.length} orphaned patient record(s)`);
         }
     }
-    
+
     // Summary
     log.header('📋 Summary');
-    
+
     const checklist = [
         { name: 'No test collections', pass: testCollections.length === 0 },
         { name: 'All required collections exist', pass: missingCollections.length === 0 },
         { name: 'Only expected collections present', pass: unexpectedCollections.length === 0 },
         { name: 'No duplicate emails', pass: true } // checked above
     ];
-    
+
     const passCount = checklist.filter(c => c.pass).length;
     const totalChecks = checklist.length;
-    
+
     console.log('\nProduction Readiness:');
     checklist.forEach(c => {
         if (c.pass) {
@@ -216,7 +216,7 @@ async function verifyProduction(db) {
             log.error(`${c.name}`);
         }
     });
-    
+
     log.header('Result');
     if (passCount === totalChecks) {
         log.success(`✨ All checks passed! (${passCount}/${totalChecks})`);
@@ -231,7 +231,7 @@ async function verifyProduction(db) {
 
 async function main() {
     const db = await connectDB();
-    
+
     try {
         const isReady = await verifyProduction(db);
         process.exit(isReady ? 0 : 1);

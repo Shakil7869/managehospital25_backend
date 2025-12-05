@@ -70,14 +70,14 @@ async function listCollections(db) {
 
 async function migrateCollections(db) {
     log.header('MongoDB Data Migration: Test → Production');
-    
+
     const existingCollections = await listCollections(db);
     log.info(`Found ${existingCollections.length} collections in database`);
-    
+
     let migratedCount = 0;
     let skippedCount = 0;
     let errorCount = 0;
-    
+
     for (const [testName, prodName] of Object.entries(collectionMap)) {
         // Check if test collection exists
         if (!existingCollections.includes(testName)) {
@@ -85,17 +85,17 @@ async function migrateCollections(db) {
             skippedCount++;
             continue;
         }
-        
+
         // Check if production collection already exists
         if (existingCollections.includes(prodName)) {
             log.warning(`${prodName} already exists (test data will not override)`);
-            
+
             const testCount = await db.collection(testName).countDocuments();
             const prodCount = await db.collection(prodName).countDocuments();
-            
+
             log.info(`  Test collection: ${testCount} documents`);
             log.info(`  Prod collection: ${prodCount} documents`);
-            
+
             // Ask if user wants to append or skip
             if (testCount > 0 && prodCount === 0) {
                 log.info(`  → Will rename ${testName} to ${prodName}`);
@@ -105,19 +105,19 @@ async function migrateCollections(db) {
                 continue;
             }
         }
-        
+
         try {
             log.step(`Migrating ${testName} → ${prodName}`);
-            
+
             const testCollection = db.collection(testName);
             const docCount = await testCollection.countDocuments();
-            
+
             if (docCount === 0) {
                 log.warning(`${testName} is empty, skipping`);
                 skippedCount++;
                 continue;
             }
-            
+
             // Check if destination exists and has data
             if (existingCollections.includes(prodName)) {
                 const prodCount = await db.collection(prodName).countDocuments();
@@ -127,12 +127,12 @@ async function migrateCollections(db) {
                     continue;
                 }
             }
-            
+
             // Rename collection
             await testCollection.rename(prodName, { dropTarget: true });
             log.success(`✓ ${testName} → ${prodName} (${docCount} documents)`);
             migratedCount++;
-            
+
         } catch (error) {
             if (error.message.includes('source namespace does not exist')) {
                 log.warning(`${testName} not found in database`);
@@ -143,22 +143,22 @@ async function migrateCollections(db) {
             }
         }
     }
-    
+
     return { migratedCount, skippedCount, errorCount };
 }
 
 async function verifyMigration(db) {
     log.header('Verifying Migration');
-    
+
     const productionCollections = ['users', 'patients', 'doctors', 'appointments', 'labtests', 'labreports', 'invoices', 'inventories', 'branches', 'notifications'];
-    
+
     let allValid = true;
-    
+
     for (const collName of productionCollections) {
         try {
             const collection = db.collection(collName);
             const docCount = await collection.countDocuments();
-            
+
             if (docCount === 0) {
                 log.warning(`${collName}: 0 documents`);
             } else {
@@ -169,47 +169,47 @@ async function verifyMigration(db) {
             allValid = false;
         }
     }
-    
+
     return allValid;
 }
 
 async function checkForTestCollections(db) {
     log.step('Checking for remaining test collections...');
-    
+
     const collections = await listCollections(db);
     const testCollections = collections.filter(c => c.startsWith('test_'));
-    
+
     if (testCollections.length === 0) {
         log.success('No test collections found');
         return true;
     }
-    
+
     log.warning(`Found ${testCollections.length} test collection(s):`);
     testCollections.forEach(c => {
         console.log(`  • ${c}`);
     });
-    
+
     return false;
 }
 
 async function main() {
     const db = await connectDB();
-    
+
     try {
         // Perform migration
         const { migratedCount, skippedCount, errorCount } = await migrateCollections(db);
-        
+
         log.header('Migration Summary');
         log.success(`Migrated: ${migratedCount} collections`);
         if (skippedCount > 0) log.warning(`Skipped: ${skippedCount} collections`);
         if (errorCount > 0) log.error(`Errors: ${errorCount} collections`);
-        
+
         // Verify migration
         const isValid = await verifyMigration(db);
-        
+
         // Check for remaining test collections
         const noTestCollections = await checkForTestCollections(db);
-        
+
         log.header('Status');
         if (isValid && noTestCollections && errorCount === 0) {
             log.success('Migration completed successfully!');
@@ -218,7 +218,7 @@ async function main() {
         } else {
             log.warning('Migration completed with issues. Please review above.');
         }
-        
+
     } catch (error) {
         log.error(`Migration failed: ${error.message}`);
         process.exit(1);

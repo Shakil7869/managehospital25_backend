@@ -12,12 +12,12 @@ const requiredEnvVars = ['MONGODB_URI', 'JWT_SECRET'];
 const missingEnvVars = requiredEnvVars.filter(envVar => !process.env[envVar]);
 
 if (missingEnvVars.length > 0) {
-  console.error('❌ FATAL: Missing required environment variables:');
-  missingEnvVars.forEach(envVar => {
-    console.error(`   - ${envVar}`);
-  });
-  console.error('\n⚠️ Please set these environment variables and restart the server.');
-  process.exit(1);
+    console.error('❌ FATAL: Missing required environment variables:');
+    missingEnvVars.forEach(envVar => {
+        console.error(`   - ${envVar}`);
+    });
+    console.error('\n⚠️ Please set these environment variables and restart the server.');
+    process.exit(1);
 }
 
 const app = express();
