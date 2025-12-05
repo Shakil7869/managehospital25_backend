@@ -21,7 +21,7 @@ router.post('/register',
     asyncHandler(async (req, res) => {
         console.log('📥 [Backend] Register request received');
         console.log('📥 [Backend] Request body:', JSON.stringify(req.body, null, 2));
-        
+
         const { firstName, lastName, email, phone, password, role, branchId, firebaseUid } = req.body;
 
         // Check if user already exists
@@ -76,7 +76,7 @@ router.post('/register',
         }
 
         console.log('🔵 [Backend] Creating user with branchId:', validBranchId);
-        
+
         // Create user
         const user = await User.create({
             firstName,
