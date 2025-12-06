@@ -11,7 +11,7 @@ const validateUserRegistration = [
 
     body('lastName')
         .optional({ checkFalsy: true })
-        .trim()
+        .if((value) => value && value.toString().trim() !== '')
         .isLength({ min: 2, max: 50 })
         .withMessage('Last name must be between 2 and 50 characters'),
 
